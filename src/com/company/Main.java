@@ -1,7 +1,7 @@
 package com.company;
 import java.util.Arrays;
 
-public class Coder {
+public class Main {
 
     public static void main(String[] args) {
         int iteration = 16; //количество раундов
