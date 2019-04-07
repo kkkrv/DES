@@ -94,7 +94,7 @@ public class Main {
 
     private String getBlockStringRepresentation(int[] encodedCharArray, String oneBlockInString) {
         String resultBlockInChars = "";
-        for (int i1 = 0; i1 < encodedCharArray.length ; i1+=8) {
+        for (int i1 = 0; i1 < encodedCharArray.length; i1 += 8) {
             String oneSymbolBinary = oneBlockInString.substring(i1, i1 + 8);
             int ascii = Integer.parseInt(oneSymbolBinary, 2);
             char symbol = (char) ascii;
@@ -103,13 +103,19 @@ public class Main {
         return resultBlockInChars;
     }
 
+    public static String SYSTEM_NEWLINE_SYMBOL = System.getProperty("line.separator");
+
     private List<String> readFromFile(String fileName) throws IOException {
         List<String> listOfString = new ArrayList<>();
         try (Scanner scanner = new Scanner(new FileReader(fileName, CHARSET))) {
             inputKey = scanner.nextLine();
+
+            var temp = "";
             while (scanner.hasNext()) {
-                listOfString.add(scanner.nextLine());
+                temp += scanner.nextLine();
+                if(scanner.hasNext()) temp += SYSTEM_NEWLINE_SYMBOL;
             }
+            listOfString.add(temp);
         }
 
         return listOfString;
@@ -119,9 +125,13 @@ public class Main {
         List<String> listOfString = new ArrayList<>();
         try (Scanner scanner = new Scanner(new FileReader(fileName, CHARSET))) {
             inputKeyFromEncoded = scanner.nextLine();
+
+            var temp = "";
             while (scanner.hasNext()) {
-                listOfString.add(scanner.nextLine());
+                temp += scanner.nextLine();
+                if(scanner.hasNext()) temp += SYSTEM_NEWLINE_SYMBOL;
             }
+            listOfString.add(temp);
         }
 
         return listOfString;
@@ -182,7 +192,7 @@ public class Main {
 
     private int[][] getL(int[][] T) {
         int[][] L = new int[4][8];
-        for (int i = 0; i < T.length/2; i++) {
+        for (int i = 0; i < T.length / 2; i++) {
             for (int j = 0; j < T[0].length; j++) {
                 L[i][j] = T[i][j];
             }
@@ -194,7 +204,7 @@ public class Main {
         int[][] R = new int[4][8];
         for (int i = 4; i < T.length; i++) {
             for (int j = 0; j < T[0].length; j++) {
-                R[i - T.length/2][j] = T[i][j];
+                R[i - T.length / 2][j] = T[i][j];
             }
         }
         return R;
@@ -202,8 +212,8 @@ public class Main {
 
     private int[][] generateKeyInTheBegin(String Key) {
         String binaryKeyString = stringToBinary(Key);
-        if (binaryKeyString.length() > 64){
-            binaryKeyString = binaryKeyString.substring(0,64);
+        if (binaryKeyString.length() > 64) {
+            binaryKeyString = binaryKeyString.substring(0, 64);
         }
         char[] binaryKeyCharArray = binaryKeyString.toCharArray();
         int[] binaryKeyIntArray = new int[64];
