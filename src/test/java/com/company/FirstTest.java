@@ -46,7 +46,7 @@ public class FirstTest {
                 {0,1,1,1},
                 {0,0,0,0}};
 
-        int[][] actual = main.resultDivide(req);
+        int[][] actual = main.to4BitValue(req);
         assertArrayEquals(expected, actual);
     }
 }
