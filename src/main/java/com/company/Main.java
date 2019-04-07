@@ -37,7 +37,6 @@ public class Main {
 
         List<String> outputDecodedStringsList = new ArrayList<>();
         for (String str : inputStringsListEncoded) {
-            //str = increaseStringLength(str);
             String[] blocks = breakIntoBlocks(str);
             String allStringInChars = "";
             for (String oneBlock : blocks) {
@@ -49,7 +48,7 @@ public class Main {
                 }
                 int[][] encodedBlock = inversedCycle(changedByMatrixP(oneBlockIntArray), inputKeyFromEncoded);
                 int size = encodedBlock.length * encodedBlock[0].length;
-                int[] encodedCharArray = inOneString(encodedBlock, size);
+                int[] encodedCharArray = ArrayConverter.to1D(encodedBlock);
                 String oneBlockInString = charArrayToString(encodedCharArray);
                 String resultBlockInChars = getBlockStringRepresentation(encodedCharArray, oneBlockInString);
                 allStringInChars += resultBlockInChars;
@@ -72,7 +71,6 @@ public class Main {
     private List<String> encode(List<String> inputStringsList) throws UnsupportedEncodingException {
         List<String> outputStringList = new ArrayList<>();
         for (String str : inputStringsList) {
-            //str = increaseStringLength(str);
             String[] blocks = breakIntoBlocks(str);
             String allStringInChars = "";
             for (String oneBlock : blocks) {
@@ -83,8 +81,7 @@ public class Main {
                     oneBlockIntArray[i] = Integer.parseInt(symb);
                 }
                 int[][] encodedBlock = cycle(changedByMatrixP(oneBlockIntArray), inputKey);
-                int size = encodedBlock.length * encodedBlock[0].length;
-                int[] encodedCharArray = inOneString(encodedBlock, size);
+                int[] encodedCharArray = ArrayConverter.to1D(encodedBlock);
                 String oneBlockInString = charArrayToString(encodedCharArray);
                 String resultBlockInChars = getBlockStringRepresentation(encodedCharArray, oneBlockInString);
                 allStringInChars += resultBlockInChars;
@@ -196,7 +193,7 @@ public class Main {
     }
 
     private int[][] getLForFirstCycle(int[][] T) {
-        int[][] L = new int[8][4];
+        int[][] L = new int[T.length][T[0].length/2];
         for (int i = 0; i < T.length; i++) {
             for (int j = 0; j < T[0].length / 2; j++) {
                 L[i][j] = T[i][j];
@@ -216,7 +213,6 @@ public class Main {
     }
 
     private int[][] generateKeyInTheBegin(String Key) throws UnsupportedEncodingException {
-        //TODO: check key
         String binaryKeyString = stringToBinary(Key);
         char[] binaryKeyCharArray = binaryKeyString.toCharArray();
         int[] binaryKeyIntArray = new int[64];
@@ -224,10 +220,7 @@ public class Main {
             String symb = Character.toString(binaryKeyCharArray[i]);
             binaryKeyIntArray[i] = Integer.parseInt(symb);
         }
-        //int[][] C = getC(transformedKey);
-        //int[][] D = getD(transformedKey);
-        // merge two arrays C and D
-        //int[][] key = mergeTwoArrays(C, D);
+
         return transformKeyMatrixG(binaryKeyIntArray);
     }
 
@@ -263,18 +256,18 @@ public class Main {
         return D;
     }
 
-    static int[][] shiftLeft(int[][] C, int iteration) {
+    static int[][] shiftLeft(int[][] C, int iterNumber) {
         int[] arr = ArrayConverter.to1D(C);
-        ArrayConverter.shiftLeft(arr, LEFT_SHIFT_VALUES[iteration - 1]);
+        ArrayConverter.shiftLeftArr(arr, LEFT_SHIFT_VALUES[iterNumber - 1]);
 
-        return ArrayConverter.to2D(arr, C.length);
+        return ArrayConverter.to2D(arr, C[0].length);
     }
 
     private static int[][] shiftRight(int[][] C, int iterNumber) {
         int[] arr = ArrayConverter.to1D(C);
-        ArrayConverter.shiftRight(arr, RIGHT_SHIFT_VALUES[iterNumber - 1]);
+        ArrayConverter.shiftRightArr(arr, RIGHT_SHIFT_VALUES[iterNumber - 1]);
 
-        return ArrayConverter.to2D(arr, C.length);
+        return ArrayConverter.to2D(arr, C[0].length);
     }
 
     private int[][] modifyByH(int[] Key) {
@@ -289,9 +282,9 @@ public class Main {
         int[][] D = getD(binaryKey);
         int[][] shiftedC = shiftLeft(C, 1);
         int[][] shiftedD = shiftLeft(D, 1);
-        int[][] shiftedKey = mergeTwoArrays(C, D);
-        int size = shiftedKey.length * shiftedKey[0].length;
-        int[][] modifiedKey = modifyByH(inOneString(shiftedKey, size));
+
+        int[][] shiftedKey = mergeTwoArrays(shiftedC, shiftedD);
+        int[][] modifiedKey = modifyByH(ArrayConverter.to1D(shiftedKey));
         // Modify data
         int[][] L = getLForFirstCycle(T);
         int[][] R = getRForFirstCycle(T);
@@ -301,19 +294,19 @@ public class Main {
         int[][] lastR = R;
 
         R = xorForEachElement(lastL, F);
-        for (int i = 1; i < iterations; i++) {
+        for (int i = 2; i <= iterations; i++) {
             shiftedC = shiftLeft(shiftedC, i);
             shiftedD = shiftLeft(shiftedD, i);
-            shiftedKey = mergeTwoArrays(C, D);
-            modifiedKey = modifyByH(inOneString(shiftedKey, size));
+            shiftedKey = mergeTwoArrays(shiftedC, shiftedD);
+            modifiedKey = modifyByH(ArrayConverter.to1D(shiftedKey));
             lastL = L;
             lastR = R;
             L = lastR;
+            R = expansionR(R);
             F = function(R, modifiedKey);
             R = xorForEachElement(lastL, F);
         }
-        int sizeLR = L.length * L[0].length * 2;
-        int[] resultArray = inOneString(mergeLAndR(L, R), sizeLR);
+        int[] resultArray = ArrayConverter.to1D(mergeLAndR(L, R));
         int[][] invP = invP();
         return modifyByMatrix(resultArray, invP);
     }
@@ -326,14 +319,13 @@ public class Main {
         int[][] D = getD(binaryKey);
         int[][] shiftedC = shiftRight(C, 1);
         int[][] shiftedD = shiftRight(D, 1);
-        int[][] shiftedKey = mergeTwoArrays(C, D);
-        int size = shiftedKey.length * shiftedKey[0].length;
-        int[][] modifiedKey = modifyByH(inOneString(shiftedKey, size));
+        int[][] shiftedKey = mergeTwoArrays(shiftedC, shiftedD);
+        int[][] modifiedKey = modifyByH(ArrayConverter.to1D(shiftedKey));
         // Modify data
         int[][] L = getLForFirstCycle(T);
         int[][] R = getRForFirstCycle(T);
         L = expansionR(L);
-        int[][] F = function(R, modifiedKey);
+        int[][] F = function(L, modifiedKey);
         int[][] lastL = L;
         int[][] lastR = R;
 
@@ -341,16 +333,17 @@ public class Main {
         for (int i = 2; i < iterations + 1; i++) {
             shiftedC = shiftRight(shiftedC, i);
             shiftedD = shiftRight(shiftedD, i);
-            shiftedKey = mergeTwoArrays(C, D);
-            modifiedKey = modifyByH(inOneString(shiftedKey, size));
+            shiftedKey = mergeTwoArrays(shiftedC, shiftedD);
+            modifiedKey = modifyByH(ArrayConverter.to1D(shiftedKey));
             lastR = R;
             lastL = L;
             R = lastL;
+            L = expansionR(L);
             F = function(L, modifiedKey);
             L = xorForEachElement(lastR, F);
         }
         int sizeLR = L.length * L[0].length * 2;
-        int[] resultArray = inOneString(mergeLAndR(L, R), sizeLR);
+        int[] resultArray = ArrayConverter.to1D(mergeLAndR(L, R));
         int[][] invP = invP();
         return modifyByMatrix(resultArray, invP);
     }
@@ -369,14 +362,8 @@ public class Main {
         return resultArray;
     }
 
-    /*private int[][] cycle(int[][] lastL, int[][] lastR, int iteration, int[][] key) {
-        int[][] L = lastR;
-        int[][] F = function(lastR, key);
-        int[][] R = lastL ^ F;
-        retu
-    }
-*/
-    private int[][] xorForEachElement(int[][] firstArray, int[][] secondArray) {
+
+    static int[][] xorForEachElement(int[][] firstArray, int[][] secondArray) {
         int[][] resultXor = new int[firstArray.length][firstArray[0].length];
 
         for (int i = 0; i < firstArray.length; i++) {
@@ -387,42 +374,22 @@ public class Main {
         return resultXor;
     }
 
-    private int[][] function(int[][] R, int[][] key) {
-        int[][] resultSumKeyAndR = sumKeyAndR(key, R);
+
+    int[][] function(int[][] R, int[][] key) {
+        int[][] resultSumKeyAndR = xorForEachElement(key, R);
 
         return resultDivide(resultSumKeyAndR);
     }
 
     private int[][] expansionR(int[][] R) {
         int[][] E = getMatrixE();
-        int[][] expandedR = new int[8][6];
-        int size = R.length * R[0].length;
-        int[] changedR = inOneString(R, size);
+        int[] changedR = ArrayConverter.to1D(R);
 
         return modifyByMatrix(changedR, E);
     }
 
-    private int[] inOneString(int[][] array, int size) {
-        int[] inOneStringR = new int[size];
-        for (int i = 0; i < array.length; i++) {
-            for (int j = 0; j < array[0].length; j++) {
-                inOneStringR[(i * array[0].length) + j] = array[i][j];
-            }
-        }
-        return inOneStringR;
-    }
 
-    private int[][] sumKeyAndR(int[][] valueKey, int[][] R) {
-        int[][] result = new int[R.length][R[0].length];
-        for (int i = 0; i < R.length; i++) {
-            for (int j = 0; j < R[0].length; j++) {
-                result[i][j] = (R[i][j] ^ valueKey[i][j]);
-            }
-        }
-        return result;
-    }
-
-    private int[][] resultDivide(int[][] result) {
+    int[][] resultDivide(int[][] result) {
         int[] B = new int[6];
         int[][] S = define();
         int[] toOneArray = new int[48];

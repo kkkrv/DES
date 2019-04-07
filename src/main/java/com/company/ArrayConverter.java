@@ -5,6 +5,7 @@ public class ArrayConverter {
 
         int[] newArray = new int[array.length * array[0].length];
 
+
         for (int i = 0; i < array.length; ++i)
             for (int j = 0; j < array[i].length; ++j) {
                 newArray[i * array[0].length + j] = array[i][j];
@@ -24,17 +25,20 @@ public class ArrayConverter {
         return newArray;
     }
 
-    public static void shiftLeft(int[] array, int amount) {
-        for (int j = 0; j < amount; j++) {
-            int a = array[0];
-            int i;
-            for (i = 0; i < array.length - 1; i++)
-                array[i] = array[i + 1];
-            array[i] = a;
-        }
+    public static int[] shiftLeftArr(int[] array, int amount) {
+            for (int j = 0; j < amount; j++) {
+                int a = array[0];
+                int i;
+                for (i = 0; i < array.length - 1; i++) {
+                    array[i] = array[i + 1];
+                }
+                array[array.length - 1] = a;
+            }
+
+        return array;
     }
 
-    public static void shiftRight(int[] array, int amount) {
+    public static int[] shiftRightArr(int[] array, int amount) {
         for (int j = 0; j < amount; j++) {
             int a = array[array.length - 1];
             int i;
@@ -42,5 +46,6 @@ public class ArrayConverter {
                 array[i] = array[i - 1];
             array[i] = a;
         }
+        return array;
     }
 }
